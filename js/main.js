@@ -1,10 +1,11 @@
 // Add all scripts to the JS folder
 function wrapper(){
 
-
+var totalExecutions = 0;
 //store width in pixels
 var h = $("figure.map").height();
 var w = $("figure.map").width();
+var currentDepth = 500;
 
 //////////////////////////////////////////////////////////////////////
 //////////////////1)Discrete Steps////////////////////////////////////
@@ -52,50 +53,31 @@ var w = $("figure.map").width();
   //   }
   // });
 
+
+
+
+
+
+// function scrollHandler(){
+
+//   if(!ticking){
+
+//   }
+
+  
+//   // var percent = (window.innerHeight - topTarget)/ window.innerHeight;
+//   // console.log(topTarget);
+//   // console.log(window.innerHeight);
+//   // console.log("percent:"+percent);
+//   // image.style("opacity", percent);
+//   // totalExecutions++;
+//   // console.log("total Executions: "+totalExecutions);
+
+// }
+
 //////////////////////////////////////////////////////////////////////
-//////////////////1)Smooth Transitions////////////////////////////////
+//////////////////Build Map///////////////////////////////
 //////////////////////////////////////////////////////////////////////
-var steps = d3.range(0,100,1).map(x=>x*0.01);
-
-var observerOptions = {
-  root: null,
-  rootMargin: '0px',
-  threshold: 0
-}
-
-let observer = new IntersectionObserver(callback, observerOptions);
-
-var target = d3.select(".step").node();
-observer.observe(target);
-
-function callback(entries, observer){
-  if(entries[0].intersectionRatio>0){
-    console.log("Attach scroll listener!");
-    window.addEventListener("scroll",scrollHandler);
-  } else {
-    console.log("Remove scroll listener!");
-    window.removeEventListener("scroll", scrollHandler);
-  }
-}
-
-var image = d3.select("img.fadeIn");
-
-function scrollHandler(){
-  //console.log(target.getBoundingClientRect());
-  var topTarget = target.getBoundingClientRect().top;
-  var percent = (window.innerHeight - topTarget)/ window.innerHeight;
-  console.log(topTarget);
-  console.log(window.innerHeight);
-  console.log(percent);
-
-  console.log("percent:"+percent);
-  image.style("opacity", percent);
-  //var opacity = percentScrolled;
-  //console.log(percentScrolled);
-  //image.style("opacity", percentScrolled);
-}
-
-
 
   // //check screen aspect ratio, set margins
   // var aspectRatio = w/h;
@@ -122,6 +104,7 @@ function scrollHandler(){
   // // }
 
   // console.log(focusArea,margins);
+var stateCentroids;
 
   var svg = d3.select("figure.map")
               .append("svg")
@@ -176,9 +159,10 @@ function scrollHandler(){
 
   var depthMarker = svg.append("path")
   							.attr("d", "M 0 0 L 9 6 L 0 12 z")
+                .attr("class", "depthMarker")
   							.attr("fill", "#fff")
   							.attr("stroke", "none")
-  							.attr("transform", `translate(${w-axisMargins.right-6},${yScale(500)-6})`);
+  							.attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
 
    Promise.all([
       d3.json("data/bounding_box_wgs84.geojson"),
@@ -187,13 +171,13 @@ function scrollHandler(){
     .then(function([boxJSON,states_topoJSON]){
 
     	var box = boxJSON.features;
-    	var states = topojson.feature(states_topoJSON, states_topoJSON.objects.states).features;
+    	var statesData = topojson.feature(states_topoJSON, states_topoJSON.objects.states).features;
 
      	albers.fitExtent([[0,0],[w,h]], boxJSON);
 
      	var states = svg.append("g")
      					.selectAll(".states")
-     					.data(states)
+     					.data(statesData)
      					.enter()
      					.append("path")
      						.attr("d", path)
@@ -202,6 +186,25 @@ function scrollHandler(){
      						.attr("stroke", "#fff")
      						.attr("stroke-width", 0.1)
      						.attr("opacity", 0.7);
+
+
+
+       stateCentroids = svg.append("g")
+              .attr("class","centroids")
+              .selectAll("circle")
+              .data(statesData)
+              .enter()
+              .append("circle")
+                .attr("x2", function(d){
+                    return path.centroid(d)[0];
+                })
+                .attr("y2", function(d){
+                    return path.centroid(d)[1];
+                })
+                //.attr("transform", function(d)  {return "translate(" + path.centroid(d) + ")"; })
+                .attr("class", "stateCentroids")
+                .attr("r", 2)
+                .attr("fill", "#fff");
 
      	// var box = svg.append("g")
      	// 				.selectAll(".box")
@@ -219,25 +222,82 @@ function scrollHandler(){
 
 
 
+//////////////////////////////////////////////////////////////////////
+//////////////////1)Smooth Animations, with RAF///////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+// var keyframes = {
+
+// }
+
+////observer for 1000
+
+var observerOptions = {
+  root: null,
+  rootMargin: '0px',
+  threshold: 0
+}
+
+let observer = new IntersectionObserver(intersectionCallback, observerOptions);
+
+var target = d3.select(".step").node();
+observer.observe(target);
+
+var image = d3.select("img.fadeIn");
+var latestKnownTop = window.innerHeight;
+var ticking = false;
+
+function onScroll(){
+  latestKnownTop = target.getBoundingClientRect().top;
+  requestTick();
+}
+
+function requestTick(){
+  console.log(ticking);
+  if(!ticking){
+      requestAnimationFrame(update);
+  }
+  ticking = true;
+}
+
+function update(){
+  //reset tick to capture next scroll
+  ticking = false;
+  var currentTop = latestKnownTop;
+
+  //update graphic
+  var percent = (window.innerHeight - currentTop)/ window.innerHeight;
+  percent = Math.min(percent,1);
+  image.style("opacity", percent);
+  totalExecutions++;
+  currentDepth = 500 + 500*percent;
+  console.log("current depth: "+currentDepth);
+  d3.select(".depthMarker").attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
 
 
+  //fly from origin to centroids
+  stateCentroids.attr("cx", function(d){
+      var x2 = d3.select(this).attr("x2");
+      var x = x2*percent;
+      return x;
+  }).attr("cy", function(d){
+      var y2 = d3.select(this).attr("y2");
+      var y = y2*percent;
+      return y;
+  });
 
 
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+function intersectionCallback(entries, observer){
+  if(entries[0].intersectionRatio>0){
+    console.log("Attach scroll listener!");
+    window.addEventListener("scroll",onScroll);
+  } else {
+    console.log("Remove scroll listener!");
+    window.removeEventListener("scroll", onScroll);
+  }
+}
 
 
 
