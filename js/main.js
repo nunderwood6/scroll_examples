@@ -83,14 +83,11 @@ var image = d3.select("img.fadeIn");
 function scrollHandler(){
   //console.log(target.getBoundingClientRect());
   var topTarget = target.getBoundingClientRect().top;
-  var topMap = image.node().getBoundingClientRect().top;
-  var mapHeight = image.node().getBoundingClientRect().height;
-  //var percentScrolled = ;
-  console.log("target:"+topTarget);
-  console.log("map:"+topMap);
-  console.log("mapheight:"+mapHeight);
+  var percent = (window.innerHeight - topTarget)/ window.innerHeight;
+  console.log(topTarget);
+  console.log(window.innerHeight);
+  console.log(percent);
 
-  var percent = 1 - ((topTarget - topMap) /mapHeight);
   console.log("percent:"+percent);
   image.style("opacity", percent);
   //var opacity = percentScrolled;
