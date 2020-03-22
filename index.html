@@ -18,7 +18,7 @@
             <h2>1) Discrete Transitions</h2>
         </div>
 
-        <div class="scrollContainer">
+<!--         <div class="scrollContainer">
             
             <figure class="sticky map">
                 <div class="stack">
@@ -52,23 +52,52 @@
                     <p>Animate path on map.</p>
                 </div>
 
-                <div class="spacer"></div>
+                <div class="spacer"></div> -->
             </article>
 
-        </div>
+        </div> -->
 
 
         <div class="title">
             <h2>2) Smooth Transitions</h2>
         </div>
 
-<!--         <div class="map">
-
-            <div class="stack">
-                <img src="img/500.png">
-            </div>
+        <div class="scrollContainer">
+            
+            <figure class="sticky map">
+                <div class="stack">
+                    <img src="img/500.png" data-index='0'>
+                    <img class="stack fadeIn" src="img/1000.png" data-index='1'>
+                    <img class="stack" src="img/1500.png" data-index='2'>
+                </div>
                 
-        </div> -->
+            </figure>
+
+            <article class="textContainer">
+                <div class="step" data-index='0'>
+                    <p>Fade to 1000m.</p>
+                </div>
+
+                <div class="spacer"></div>
+
+                <div class="step2" data-index='1'>
+                    <p>Fade to 1500m.</p>
+                </div>
+
+                <div class="spacer"></div>
+
+<!--                 <div class="step" data-index='1'>
+                    <p>Annotate point of interest.</p>
+                </div>
+
+                <div class="spacer"></div>
+
+                <div class="step" data-index='1'>
+                    <p>Animate path on map.</p>
+                </div>
+
+                <div class="spacer"></div> -->
+            </article>
 
        <script src="lib/enter-view.js"></script> 
        <script src="lib/topojson.min.js"></script>

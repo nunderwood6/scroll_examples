@@ -9,25 +9,25 @@ var w = $("figure.map").width();
 //////////////////////////////////////////////////////////////////////
 //////////////////1)Discrete Steps////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
-  function updateChartForward(index){
-    //fade new image in
-    var newImage =d3.select(`img[data-index="${index+1}"]`);
-    newImage.transition().duration(1000).style("opacity", 1);
-    //fade old image out
-    var oldImage = d3.select(`img[data-index="${index}"]`);
-    oldImage.transition().duration(1000).style("opacity", 0);
+  // function updateChartForward(index){
+  //   //fade new image in
+  //   var newImage =d3.select(`img[data-index="${index+1}"]`);
+  //   newImage.transition().duration(1000).style("opacity", 1);
+  //   //fade old image out
+  //   var oldImage = d3.select(`img[data-index="${index}"]`);
+  //   oldImage.transition().duration(1000).style("opacity", 0);
 
-  }
+  // }
 
-  function updateChartBackward(index){
-    console.log(index);
-    // //fade new image in
-    var newImage =d3.select(`img[data-index="${index}"]`);
-    newImage.transition().duration(1000).style("opacity", 1);
-    //fade old image out
-    var oldImage = d3.select(`img[data-index="${index+1}"]`);
-    oldImage.transition().duration(1000).style("opacity", 0);
-  }
+  // function updateChartBackward(index){
+  //   console.log(index);
+  //   // //fade new image in
+  //   var newImage =d3.select(`img[data-index="${index}"]`);
+  //   newImage.transition().duration(1000).style("opacity", 1);
+  //   //fade old image out
+  //   var oldImage = d3.select(`img[data-index="${index+1}"]`);
+  //   oldImage.transition().duration(1000).style("opacity", 0);
+  // }
 
 
   //set top of sticky position so it's centered vertically
@@ -36,25 +36,69 @@ var w = $("figure.map").width();
   var stickyTop = (windowH - stickyH)/2;
   d3.select("figure.sticky").style("top",stickyTop+"px");
 
-  var stepSel = d3.selectAll(".step");
+  // var stepSel = d3.selectAll(".step");
 
-  enterView({
-    selector: stepSel.nodes(),
-    offset: 0.5,
-    enter: el=> {
-      const index = +d3.select(el).attr('data-index');
-      updateChartForward(index);
-    },
-    exit: el => {
-      let index = +d3.select(el).attr('data-index');
-      // index = Math.max(0, index - 1);
-      updateChartBackward(index);
-    }
-  });
+  // enterView({
+  //   selector: stepSel.nodes(),
+  //   offset: 0.5,
+  //   enter: el=> {
+  //     const index = +d3.select(el).attr('data-index');
+  //     updateChartForward(index);
+  //   },
+  //   exit: el => {
+  //     let index = +d3.select(el).attr('data-index');
+  //     // index = Math.max(0, index - 1);
+  //     updateChartBackward(index);
+  //   }
+  // });
 
 //////////////////////////////////////////////////////////////////////
 //////////////////1)Smooth Transitions////////////////////////////////
 //////////////////////////////////////////////////////////////////////
+var steps = d3.range(0,100,1).map(x=>x*0.01);
+
+var observerOptions = {
+  root: null,
+  rootMargin: '0px',
+  threshold: 0
+}
+
+let observer = new IntersectionObserver(callback, observerOptions);
+
+var target = d3.select(".step").node();
+observer.observe(target);
+
+function callback(entries, observer){
+  if(entries[0].intersectionRatio>0){
+    console.log("Attach scroll listener!");
+    window.addEventListener("scroll",scrollHandler);
+  } else {
+    console.log("Remove scroll listener!");
+    window.removeEventListener("scroll", scrollHandler);
+  }
+}
+
+var image = d3.select("img.fadeIn");
+
+function scrollHandler(){
+  //console.log(target.getBoundingClientRect());
+  var topTarget = target.getBoundingClientRect().top;
+  var topMap = image.node().getBoundingClientRect().top;
+  var mapHeight = image.node().getBoundingClientRect().height;
+  //var percentScrolled = ;
+  console.log("target:"+topTarget);
+  console.log("map:"+topMap);
+  console.log("mapheight:"+mapHeight);
+
+  var percent = 1 - ((topTarget - topMap) /mapHeight);
+  console.log("percent:"+percent);
+  image.style("opacity", percent);
+  //var opacity = percentScrolled;
+  //console.log(percentScrolled);
+  //image.style("opacity", percentScrolled);
+}
+
+
 
   // //check screen aspect ratio, set margins
   // var aspectRatio = w/h;
@@ -84,7 +128,7 @@ var w = $("figure.map").width();
 
   var svg = d3.select("figure.map")
               .append("svg")
-              .attr("overflow", "visible")
+              //.attr("overflow", "visible")
               // .attr("width", w+"px")
               // .attr("height", h+"px")
               .attr("viewBox", `0 0 ${w} ${h}`)

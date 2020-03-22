@@ -16,6 +16,7 @@ html,body {
 article {
 	position: relative;
 	border: 1px dotted orange;
+	z-index: 3;
 }
 
 .step {
