@@ -164,6 +164,14 @@ var stateCentroids;
   							.attr("stroke", "none")
   							.attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
 
+  var depthText = d3.select("div.stack").append("p")
+                              .style("position", "absolute")
+                              .style("right", axisMargins.right + "px")
+                              .style("top", "10px")
+                              .html(`Depth: <span class="depth">500</span>m`);
+
+                              console.log("here!");
+
    Promise.all([
       d3.json("data/bounding_box_wgs84.geojson"),
       d3.json("data/states.json")
@@ -226,9 +234,14 @@ var stateCentroids;
 //////////////////1)Smooth Animations, with RAF///////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-// var keyframes = {
-
-// }
+var keyframes = [
+    {"scroll":0,"value":500},
+    {"scroll":300,"value":1000},
+    {"scroll":600,"value":1500},
+    {"scroll":900,"value":2000},
+    {"scroll":1200,"value":2500},
+    {"scroll":1500,"value":3000}
+]
 
 ////observer for 1000
 
@@ -273,7 +286,7 @@ function update(){
   currentDepth = 500 + 500*percent;
   console.log("current depth: "+currentDepth);
   d3.select(".depthMarker").attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
-
+  d3.select(".depth").html(Math.round(currentDepth))
 
   //fly from origin to centroids
   stateCentroids.attr("cx", function(d){
