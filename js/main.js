@@ -234,20 +234,11 @@ var stateCentroids;
 //////////////////1)Smooth Animations, with RAF///////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-var keyframes = [
-    {"scroll":0,"value":500},
-    {"scroll":300,"value":1000},
-    {"scroll":600,"value":1500},
-    {"scroll":900,"value":2000},
-    {"scroll":1200,"value":2500},
-    {"scroll":1500,"value":3000}
-]
 
-////observer for 1000
-
+//observer for 1000
 var observerOptions = {
   root: null,
-  rootMargin: '0px',
+  rootMargin: "0px",
   threshold: 0
 }
 
@@ -256,7 +247,6 @@ let observer = new IntersectionObserver(intersectionCallback, observerOptions);
 var target = d3.select(".step").node();
 observer.observe(target);
 
-var image = d3.select("img.fadeIn");
 var latestKnownTop = window.innerHeight;
 var ticking = false;
 
@@ -266,7 +256,6 @@ function onScroll(){
 }
 
 function requestTick(){
-  console.log(ticking);
   if(!ticking){
       requestAnimationFrame(update);
   }
@@ -278,36 +267,45 @@ function update(){
   ticking = false;
   var currentTop = latestKnownTop;
 
-  //update graphic
   var percent = (window.innerHeight - currentTop)/ window.innerHeight;
-  percent = Math.min(percent,1);
-  image.style("opacity", percent);
-  totalExecutions++;
-  currentDepth = 500 + 500*percent;
-  console.log("current depth: "+currentDepth);
+  if(percent>1) percent = 1;
+  if(percent<0) percent = 0;
+  currentDepth = 500 + 2500*percent;
+
+
+  d3.selectAll("img.stack").style("opacity", function(d){
+    var depth = d3.select(this).attr("data-index");
+    var currentPercent = 1 - (depth - currentDepth) /500;
+    if(currentPercent < 0){
+      return 0;
+    } else if(currentPercent > 1) {
+      return 1;
+    } else {
+      return currentPercent;
+    }
+  });
+
   d3.select(".depthMarker").attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
   d3.select(".depth").html(Math.round(currentDepth))
 
-  //fly from origin to centroids
-  stateCentroids.attr("cx", function(d){
-      var x2 = d3.select(this).attr("x2");
-      var x = x2*percent;
-      return x;
-  }).attr("cy", function(d){
-      var y2 = d3.select(this).attr("y2");
-      var y = y2*percent;
-      return y;
-  });
+  // //fly from origin to centroids
+  // stateCentroids.attr("cx", function(d){
+  //     var x2 = d3.select(this).attr("x2");
+  //     var x = x2*percent;
+  //     return x;
+  // }).attr("cy", function(d){
+  //     var y2 = d3.select(this).attr("y2");
+  //     var y = y2*percent;
+  //     return y;
+  // });
 
 
 }
 
 function intersectionCallback(entries, observer){
   if(entries[0].intersectionRatio>0){
-    console.log("Attach scroll listener!");
     window.addEventListener("scroll",onScroll);
   } else {
-    console.log("Remove scroll listener!");
     window.removeEventListener("scroll", onScroll);
   }
 }
