@@ -1,11 +1,36 @@
 // Add all scripts to the JS folder
 function wrapper(){
 
+
+////////////////////////
+//Set image width and height as percentages
+//window width and height
+var screenRatio = window.innerWidth/window.innerHeight;
+
+var image = d3.select("img.stack").node();
+var imageRatio = image.naturalWidth/image.naturalHeight;
+
+if(imageRatio>screenRatio){
+  d3.selectAll("img.stack").style("width", "100%");
+} else {
+  var width = window.innerHeight * 1.5 * 0.9 / window.innerWidth * 100
+  d3.selectAll("div.stack").style("width", width + "%")
+                           .style("height", width*3/2 +"%")
+                           .style("margin-left", (100-width)/2 + "%")
+                           .style("padding-top", 2+"px");
+}
+
+
+
+//////////////////////////////////////////
 var totalExecutions = 0;
 //store width in pixels
-var h = $("figure.map").height();
-var w = $("figure.map").width();
+var h = $("div.stack").height();
+var w = $("div.stack").width();
 var currentDepth = 500;
+
+console.log(h);
+console.log(w);
 
 //////////////////////////////////////////////////////////////////////
 //////////////////1)Discrete Steps////////////////////////////////////
@@ -112,8 +137,9 @@ var stateCentroids;
               // .attr("width", w+"px")
               // .attr("height", h+"px")
               .attr("viewBox", `0 0 ${w} ${h}`)
+              .attr("width", width + "%")
               .style("position","absolute")
-              .style("left", "0")
+              .style("left", (100-width)/2 + "%")
               .style("top", "0");
 
   //create projection
@@ -164,7 +190,7 @@ var stateCentroids;
   							.attr("stroke", "none")
   							.attr("transform", `translate(${w-axisMargins.right-6},${yScale(currentDepth)-6})`);
 
-  var depthText = d3.select("div.stack").append("p")
+  var depthText = d3.select("figure.map").append("p")
                               .style("position", "absolute")
                               .style("right", axisMargins.right + "px")
                               .style("top", "10px")
@@ -214,16 +240,32 @@ var stateCentroids;
                 .attr("r", 2)
                 .attr("fill", "#fff");
 
-     	// var box = svg.append("g")
-     	// 				.selectAll(".box")
-     	// 				.data(box)
-     	// 				.enter()
-     	// 				.append("path")
-     	// 					.attr("d", path)
-     	// 					.attr("class", "states")
-     	// 					.attr("fill", "none")
-     	// 					.attr("stroke", "#fff")
-     	// 					.attr("stroke-width", 0.25);
+     	var coords = [];
+
+      box.forEach(function(point){
+            coords.push(path.centroid(point));
+      });
+      
+      var bounds = {
+            top: coords[3][1],
+            left: coords[3][0],
+            bottom: coords[0][1],
+            right: coords[1][0]
+      }
+
+        d3.selectAll(".raster img")
+            .style("width", bounds.right - bounds.left + "px")
+            .style("height", bounds.bottom - bounds.top + "px")
+            .style("left", bounds.left + "px")
+            .style("top", bounds.top + "px");
+
+      var extentRect = svg.append("rect")
+                            .attr("x", bounds.left)
+                            .attr("y", bounds.top)
+                            .attr("width", bounds.right - bounds.left)
+                            .attr("height", bounds.bottom - bounds.top)
+                            .attr("fill", "none")
+                            .attr("stroke", "#fff");
 
 
      });

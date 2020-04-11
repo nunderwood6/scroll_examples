@@ -10,28 +10,28 @@ html,body {
 
 
 .scrollContainer {
-	border: 2px dotted green;
+/*	border: 2px dotted green;*/
 }
 
 article {
 	position: relative;
-	border: 1px dotted orange;
-	z-index: 3;
+/*	border: 1px dotted orange;
+*/	z-index: 3;
 }
 
 .step {
 	margin: 200px auto;
 	text-align: center;
-	border: 1px dotted blue;
-}
+/*	border: 1px dotted blue;
+*/}
 
 figure.sticky {
 	z-index: 1;
 	position: -webkit-sticky;
 	position: sticky;
 	top: 0;
-	border: 1px dotted red;
-}
+/*	border: 1px dotted red;
+*/}
 
 figure.sticky svg {
 	z-index: 2;
@@ -72,12 +72,11 @@ div.map{
 
 div.stack {
 	position: relative;
-	width: 100%;
 }
 
 div.stack img {
 	width: 100%;
-	height:auto;
+	height: 100%;
 }
 
 div.stack img.stack {
